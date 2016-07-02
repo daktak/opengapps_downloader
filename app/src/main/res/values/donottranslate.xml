@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="selector_val" translatable="false">a[rel=nofollow][href$=.zip]</string>
+    <string name="base_val" translatable="false">https://github.com/</string>
+    <string name="subdir" translatable="false">opengapps</string>
+    <string name="android_val" translatable="false">6.0</string>
+    <string name="variant_val" translatable="false">nano</string>
+    <string name="arch_val" translatable="false">arm64</string>
+    <string name="hour_val" translatable="false">3</string>
+    <string name="minute_val" translatable="false">0</string>
+    <string name="archdefault" translatable="false">arm64</string>
+    <string name="androiddefault" translatable="false">6.0</string>
+</resources>
