@@ -3,9 +3,11 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
     <ImageView
+            android:contentDescription="@string/imgdesc"
             android:id="@+id/img"
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
@@ -19,5 +21,6 @@
         android:textSize="18sp"
         android:paddingTop="10sp"
         android:paddingBottom="10sp"
-        android:layout_toRightOf="@+id/img" />
+        android:layout_toRightOf="@+id/img"
+        android:layout_toEndOf="@+id/img" />
 </RelativeLayout>
