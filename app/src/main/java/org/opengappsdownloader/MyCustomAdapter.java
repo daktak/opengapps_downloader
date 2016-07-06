@@ -1,6 +1,7 @@
 package org.opengappsdownloader;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,14 +14,16 @@ public class MyCustomAdapter extends ArrayAdapter<String> {
     private final Context context;
     private final String[] values;
     private final File[] file;
+    private final String[] md5check;
     private static final String LOGTAG = LogUtil
-        .makeLogTag(MainActivity.class);
+            .makeLogTag(MainActivity.class);
 
-    public MyCustomAdapter(Context context, String[] values, File[] file) {
+    public MyCustomAdapter(Context context, String[] values, File[] file, String[] md5check) {
         super(context, R.layout.rowlayout, values);
         this.context = context;
         this.values = values;
         this.file = file;
+        this.md5check = md5check;
     }
 
     @Override
@@ -34,13 +37,22 @@ public class MyCustomAdapter extends ArrayAdapter<String> {
             convertView = inflater.inflate(R.layout.rowlayout, parent, false);
             holder = new ViewHolder();
             holder.text = (TextView) convertView.findViewById(R.id.label);
-            convertView.setTag(holder);//Log.w("BasketBuild",s);
+            convertView.setTag(holder);
+
             try {
                 for (int j = 0; j < file.length; j++) {
-
                     if (s.equals(file[j].getName())) {
+                        int color = ContextCompat.getColor(context, R.color.disabledText);
+                        Log.d(LOGTAG, file[j].getName() + " md5: " + md5check[position]);
+                        if (md5check[position].equalsIgnoreCase("Y") ) {
+                            color =ContextCompat.getColor(context, R.color.md5_match);
+                        } else if (md5check[position].equalsIgnoreCase("N")) {
+                            color = ContextCompat.getColor(context, R.color.md5_nomatch);
+                        }
+                        holder.text.setTextColor(color);
+
+
                         //Log.w("BasketBuild","have file: "+s+ ":"+file[j] + " : "+ j+"pos:" + position);
-                        holder.text.setTextColor(R.color.disabledText);
                         convertView.setEnabled(false);
                     }
                 }

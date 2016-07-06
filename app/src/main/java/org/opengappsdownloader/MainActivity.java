@@ -23,9 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -80,6 +78,12 @@ public class MainActivity extends AppCompatActivity
         setAlarm(this);
         run(this);
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        setAlarm(this);
+        run(this);
     }
 
     @TargetApi(21)
@@ -250,8 +254,39 @@ public class MainActivity extends AppCompatActivity
 
     public String getBaseUrl() {
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String prefix = mySharedPreferences.getString("prefBase",getString(R.string.base_val)).trim()+"/";
+        String prefix = mySharedPreferences.getString("prefBase",getString(R.string.base_val)).trim();
         return prefix;
+    }
+
+    public String readFile(String name) {
+
+        StringBuilder out = new StringBuilder();
+        try {
+            FileInputStream filein = openFileInput(name);
+            InputStreamReader inputreader = new InputStreamReader(filein);
+            BufferedReader buffreader = new BufferedReader(inputreader);
+            String line;
+
+            while (( line = buffreader.readLine()) != null) {
+                out.append(line);
+            }
+
+            filein.close();
+        } catch (Exception e) {
+            Log.d(LOGTAG,"Unable to open: "+name);
+        }
+        return out.toString();
+    }
+
+    public void writeFile(String name, String body){
+        try {
+            FileOutputStream fileout = openFileOutput(name, MODE_PRIVATE);
+            OutputStreamWriter outputWriter = new OutputStreamWriter(fileout);
+            outputWriter.write(body);
+            outputWriter.close();
+        } catch (Exception e) {
+            Log.w(LOGTAG, "Unable to write: "+name);
+        }
     }
 
     public void setList(List<String> values)  {
@@ -259,6 +294,7 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String directory = mySharedPreferences.getString("prefDirectory",Environment.DIRECTORY_DOWNLOADS).trim();
         boolean external = mySharedPreferences.getBoolean("prefExternal",false);
+        ArrayList<String> md5check = new ArrayList<String>();
 
         if (external){
             directory = Environment.DIRECTORY_DOWNLOADS;
@@ -279,10 +315,12 @@ public class MainActivity extends AppCompatActivity
         }
 
         for (String i : values) {
+            String md5val = "";
             i = i.trim();
-            int slash = i.lastIndexOf("/")+1;
+            String name = i;
             try {
-                String filename = i.substring(slash);
+                int slash = i.lastIndexOf("/")+1;
+                name = i.substring(slash);
                 /*
                 if (EasyPermissions.hasPermissions(this, perms2)) {
                     /*
@@ -296,12 +334,39 @@ public class MainActivity extends AppCompatActivity
                 }
                 */
 
-                names.add(filename);
+                //names.add(filename);
             } catch (Exception e){
                 Log.w(LOGTAG, "Cant find slash in "+i);
-                names.add(i);
+                //names.add(i);
             }
+            names.add(name);
 
+            //for every result - check if file exists
+            // then check if downloaded md5 exists
+            // then check if calc exists
+
+            for (int k = 0; k < file.length; k++) {
+
+                if (name.equals(file[k].getName())) {
+                    String md5 = readFile(name + ".md5");
+                    if (!md5.isEmpty()) {
+                        String md5calc = readFile(name+".calc.md5");
+                        if (md5calc.isEmpty()) {
+                            md5calc = MD5.calculateMD5(file[k]);
+                        }
+                        if (md5calc.equalsIgnoreCase(md5)) {
+                            md5val = "Y";
+                            //cache this result
+                            writeFile(name+".calc.md5", md5calc);
+                        } else {
+                            md5val = "N";
+                            //don't cache, in the event the file is still downloading
+                        }
+
+                    }
+                }
+            }
+            md5check.add(md5val);
 
             String prefix = "";
             if (!(i.startsWith("http"))) {
@@ -312,14 +377,16 @@ public class MainActivity extends AppCompatActivity
 
         }
         //newest on top
-        Collections.reverse(urls);
-        Collections.reverse(names);
+        //Collections.reverse(urls);
+        //Collections.reverse(names);
         String[] namesS = new String[names.size()];
         namesS = names.toArray(namesS);
         // Find the ListView resource.
         ListView mainListView = (ListView) findViewById( R.id.listView );
+        String [] md5checkS = new String[md5check.size()];
+        md5checkS = md5check.toArray(md5checkS);
 
-        MyCustomAdapter listAdapter = new MyCustomAdapter(this, namesS, file);
+        MyCustomAdapter listAdapter = new MyCustomAdapter(this, namesS, file, md5checkS);
         //ListAdapter listAdapter =  new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, names);
 
         // Set the ArrayAdapter as the ListView's adapter.

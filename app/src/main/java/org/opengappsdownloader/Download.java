@@ -18,7 +18,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,7 +98,7 @@ public class Download extends Service {
         } catch (Throwable t) {
             Log.e(LOGTAG,t.getMessage());
         }
-        Collections.reverse(urls);
+        //Collections.reverse(urls);
         return urls.toString();
     }
 
@@ -115,13 +117,37 @@ public class Download extends Service {
 
     public String getBaseUrl() {
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return mySharedPreferences.getString("prefBase",getString(R.string.base_val)).trim()+"/";
+        return mySharedPreferences.getString("prefBase",getString(R.string.base_val)).trim();
     }
 
     public ArrayList<String> getDLUrl(String url){
         Log.d(LOGTAG, "Download parse: " +url);
         ArrayList<String> urls = new ArrayList<String>();
         urls.add(url);
+        try {
+
+            URL md5Url = new URL(url+".md5");
+            HttpURLConnection connection = (HttpURLConnection) md5Url.openConnection();
+            connection.setDoInput(true);
+            try {
+                connection.connect();
+            } catch (Exception t) {
+                Log.w(LOGTAG, "aoeu" + t.getMessage());
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(),"UTF-8"));
+            String md5 = br.readLine();
+
+            br.close();
+
+            int slash = url.lastIndexOf("/");
+            String filename = url.substring(slash + 1);
+            writeFile(filename+".md5", md5);
+
+        } catch (Exception e) {
+            Log.w(LOGTAG, "MD5 Download error: " + e.getMessage());
+        }
+
         return urls;
     }
 
@@ -164,14 +190,27 @@ public class Download extends Service {
                 }
                 url = prefix+i;
             }
-            if (!(url.isEmpty())){
+            if (!(url.isEmpty())) {
                 int slash = url.lastIndexOf("/");
-                String filename = url.substring(slash+1);
+                String filename = url.substring(slash + 1);
                 download(url, getString(R.string.app_name), filename, filename);
             }
 
         }
     }
+
+
+    public void writeFile(String name, String body){
+        try {
+            FileOutputStream fileout = openFileOutput(name, MODE_PRIVATE);
+            OutputStreamWriter outputWriter = new OutputStreamWriter(fileout);
+            outputWriter.write(body);
+            outputWriter.close();
+        } catch (Exception e) {
+            Log.w(LOGTAG, "Unable to write: "+name);
+        }
+    }
+
     public void download(String url, String desc, String title, String filename) {
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
