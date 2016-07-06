@@ -137,11 +137,13 @@ public class Download extends Service {
 
             BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(),"UTF-8"));
             String md5 = br.readLine();
+            md5 = md5.substring(0,md5.indexOf(" "));
 
             br.close();
 
             int slash = url.lastIndexOf("/");
             String filename = url.substring(slash + 1);
+
             writeFile(filename+".md5", md5);
 
         } catch (Exception e) {
