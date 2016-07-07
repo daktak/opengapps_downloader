@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        setApi(this);
         setAlarm(this);
         run(this);
     }
@@ -89,8 +90,10 @@ public class MainActivity extends AppCompatActivity
     @TargetApi(21)
     public String get64(){
         String out = "";
-        if (Build.SUPPORTED_64_BIT_ABIS.length > 0) {
-            out += "64";
+        if (Build.VERSION.SDK_INT >= 21) {
+            if (Build.SUPPORTED_64_BIT_ABIS.length > 0) {
+                out += "64";
+            }
         }
         return out;
     }
@@ -99,27 +102,41 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefEdit = mySharedPreferences.edit();
         String android = mySharedPreferences.getString("prefAndroid",getString(R.string.android_val));
-        String newAndroid = Build.VERSION.RELEASE.substring(0,3);
-        //and newAndroid in list?
-        Log.d(LOGTAG, "Detected release: " + newAndroid);
-        if  (!Arrays.asList(getResources().getStringArray(R.array.android)).contains(newAndroid)) {
-            newAndroid = getString(R.string.androiddefault);
-        }
+
         if (android.equalsIgnoreCase(getString(R.string.auto_detect))) {
+            String newAndroid = getString(R.string.androiddefault);
+            try {
+                newAndroid = Build.VERSION.RELEASE.substring(0, 3);
+            } catch (Exception e) {
+                Log.w(LOGTAG, "Failed to get version");
+            }
+            //and newAndroid in list?
+            Log.d(LOGTAG, "Detected release: " + newAndroid);
+            if (!Arrays.asList(getResources().getStringArray(R.array.android)).contains(newAndroid)) {
+                newAndroid = getString(R.string.androiddefault);
+            }
             prefEdit.remove("prefAndroid");
             prefEdit.putString("prefAndroid", newAndroid);
             Log.d(LOGTAG, "Setting api: " + newAndroid);
         }
+
         String arch = mySharedPreferences.getString("prefArch",getString(R.string.arch_val));
-        String arch1 = Build.CPU_ABI;
-        String newArch = arch1.substring(0,3).toLowerCase(Locale.ENGLISH);
-        newArch += get64();
-        Log.d(LOGTAG, "Detected arch: " + newArch);
-        //and newArc8h in list?
-        if  (!Arrays.asList(getResources().getStringArray(R.array.arch)).contains(newArch)) {
-            newArch = getString(R.string.archdefault);
-        }
-        if (arch.equalsIgnoreCase(getString(R.string.auto_detect))){
+
+        if (arch.equalsIgnoreCase(getString(R.string.auto_detect))) {
+            String newArch = getString(R.string.archdefault);
+            try {
+                String arch1 = Build.CPU_ABI;
+                newArch = arch1.substring(0,3).toLowerCase(Locale.ENGLISH);
+                newArch += get64();
+            } catch (Exception e) {
+                Log.w(LOGTAG, "Failed to get arch");
+            }
+            Log.d(LOGTAG, "Detected arch: " + newArch);
+            //and newArc8h in list?
+            if  (!Arrays.asList(getResources().getStringArray(R.array.arch)).contains(newArch)) {
+                newArch = getString(R.string.archdefault);
+            }
+
             prefEdit.remove("prefArch");
             prefEdit.putString("prefArch",newArch);
             Log.d(LOGTAG, "Setting arch: " + newArch);
