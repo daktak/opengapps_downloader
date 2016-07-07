@@ -124,33 +124,43 @@ public class Download extends Service {
         Log.d(LOGTAG, "Download parse: " +url);
         ArrayList<String> urls = new ArrayList<String>();
         urls.add(url);
-        try {
-
-            URL md5Url = new URL(url+".md5");
-            HttpURLConnection connection = (HttpURLConnection) md5Url.openConnection();
-            connection.setDoInput(true);
-            try {
-                connection.connect();
-            } catch (Exception t) {
-                Log.w(LOGTAG, "aoeu" + t.getMessage());
-            }
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(),"UTF-8"));
-            String md5 = br.readLine();
-            md5 = md5.substring(0,md5.indexOf(" "));
-
-            br.close();
-
-            int slash = url.lastIndexOf("/");
-            String filename = url.substring(slash + 1);
-
-            writeFile(filename+".md5", md5);
-
-        } catch (Exception e) {
-            Log.w(LOGTAG, "MD5 Download error: " + e.getMessage());
-        }
+        new dlMd5().execute(new String[]{urls.get(0), url +".md5"});
 
         return urls;
+    }
+
+
+    private class dlMd5 extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground (String... strings){
+
+            try {
+                URL md5Url = new URL(strings[0]+".md5");
+                HttpURLConnection connection = (HttpURLConnection) md5Url.openConnection();
+                connection.setDoInput(true);
+                try {
+                    connection.connect();
+                } catch (Exception t) {
+                    Log.w(LOGTAG, "Connection error: " + t.getMessage());
+                }
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(),"UTF-8"));
+                String md5 = br.readLine();
+                md5 = md5.substring(0,md5.indexOf(" "));
+
+                br.close();
+
+                int slash = strings[0].lastIndexOf("/");
+                String filename = strings[0].substring(slash + 1);
+
+                writeFile(filename+".md5", md5);
+
+            } catch (Exception e) {
+                Log.w(LOGTAG, "MD5 Download error: " + e.getMessage());
+            }
+            return null;
+        }
     }
 
     private class downloadFirstThread extends AsyncTask<String, Void, String> {
@@ -171,6 +181,7 @@ public class Download extends Service {
 
         }
     }
+
     private class ParseURLDownload extends AsyncTask<String, Void, String> {
 
         @Override
