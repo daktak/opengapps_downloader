@@ -372,6 +372,8 @@ public class MainActivity extends AppCompatActivity
                             //don't cache, in the event the file is still downloading
                         }
 
+                    } else {
+                        md5val = "U";
                     }
                 }
             }
