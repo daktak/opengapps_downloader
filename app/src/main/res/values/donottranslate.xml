@@ -10,4 +10,6 @@
     <string name="minute_val" translatable="false">0</string>
     <string name="archdefault" translatable="false">arm64</string>
     <string name="androiddefault" translatable="false">6.0</string>
+    <string name="md5calc_ext" translatable="false">.calc.md5</string>
+    <string name="md5_ext" translatable="false">.md5</string>
 </resources>

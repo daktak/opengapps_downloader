@@ -3,8 +3,10 @@ package org.opengappsdownloader;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -45,8 +47,10 @@ public class MainActivity extends AppCompatActivity
     private static final int RC_EXT_WRITE =1;
     private static final int RC_EXT_READ=2;
     public static MainActivity instance = null;
-
-    private ArrayList<String> urls = new ArrayList<String>();
+    public ArrayList<String> md5check = new ArrayList<String>();
+    public ArrayList<String> names = new ArrayList<String>();
+    public ArrayList<String> urls = new ArrayList<String>();
+    public String directory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +61,9 @@ public class MainActivity extends AppCompatActivity
 
         PreferenceManager.setDefaultValues(this, R.xml.settings, false);
         setApi(this);
-        String[] names = new String[] {getString(R.string.loading)};
+        String[] namesA = new String[] {getString(R.string.loading)};
         ListView mainListView = (ListView) findViewById( R.id.listView );
-        ListAdapter listAdapter =  new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, names);
+        ListAdapter listAdapter =  new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, namesA);
         // Set the ArrayAdapter as the ListView's adapter.
         mainListView.setAdapter( listAdapter );
 
@@ -307,11 +311,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void setList(List<String> values)  {
-        ArrayList<String> names = new ArrayList<String>();
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String directory = mySharedPreferences.getString("prefDirectory",Environment.DIRECTORY_DOWNLOADS).trim();
+        directory = mySharedPreferences.getString("prefDirectory",Environment.DIRECTORY_DOWNLOADS).trim();
         boolean external = mySharedPreferences.getBoolean("prefExternal",false);
-        ArrayList<String> md5check = new ArrayList<String>();
+        md5check.clear();
+        names.clear();
+        urls.clear();
+        String md5_ext = getString(R.string.md5_ext);
+        final String md5_calc_ext = getString(R.string.md5calc_ext);
 
         if (external){
             directory = Environment.DIRECTORY_DOWNLOADS;
@@ -338,23 +345,8 @@ public class MainActivity extends AppCompatActivity
             try {
                 int slash = i.lastIndexOf("/")+1;
                 name = i.substring(slash);
-                /*
-                if (EasyPermissions.hasPermissions(this, perms2)) {
-                    /*
-                    for (int j = 0; j < file.length; j++) {
-                        if (filename.equals(file[j].getName())) {
-                            Log.d(LOGTAG,filename+" exists");
-                            filename += " Have";
-                        }
-                    }
-
-                }
-                */
-
-                //names.add(filename);
             } catch (Exception e){
                 Log.w(LOGTAG, "Cant find slash in "+i);
-                //names.add(i);
             }
             names.add(name);
 
@@ -365,16 +357,16 @@ public class MainActivity extends AppCompatActivity
             for (int k = 0; k < file.length; k++) {
 
                 if (name.equals(file[k].getName())) {
-                    String md5 = readFile(name + ".md5");
+                    String md5 = readFile(name + md5_ext);
                     if (!md5.isEmpty()) {
-                        String md5calc = readFile(name+".calc.md5");
+                        String md5calc = readFile(name+md5_calc_ext);
                         if (md5calc.isEmpty()) {
                             md5calc = MD5.calculateMD5(file[k]);
                         }
                         if (md5calc.equalsIgnoreCase(md5)) {
                             md5val = "Y";
                             //cache this result
-                            writeFile(name+".calc.md5", md5calc);
+                            writeFile(name+md5_calc_ext, md5calc);
                         } else {
                             md5val = "N";
                             //don't cache, in the event the file is still downloading
@@ -408,6 +400,38 @@ public class MainActivity extends AppCompatActivity
 
         // Set the ArrayAdapter as the ListView's adapter.
         mainListView.setAdapter( listAdapter );
+        SwipeDismissListViewTouchListener touchListener =
+                new SwipeDismissListViewTouchListener(
+                        mainListView,
+                        new SwipeDismissListViewTouchListener.DismissCallbacks() {
+                            @Override
+                            public boolean canDismiss(int position) {
+                                boolean dis = true;
+                                if (md5check.get(position).isEmpty()) { dis = false; };
+                                return dis;
+                            }
+
+                            @Override
+                            public void onDismiss(ListView listView, int[] reverseSortedPositions) {
+                                for (int position : reverseSortedPositions) {
+                                    final int pos = position;
+                                    DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            File direct = new File(Environment.getExternalStorageDirectory() + "/" + directory+"/"+names.get(pos));
+                                            Log.d(LOGTAG, "Delete " + direct.getName());
+                                            if (direct.exists()&&direct.isFile()) { direct.delete(); }
+                                            File md5file = new File(getFilesDir(), names.get(pos) + md5_calc_ext );
+                                            if (md5file.exists()&&md5file.isFile()) { md5file.delete(); }
+                                            if (MainActivity.instance != null) {
+                                                run(MainActivity.instance);
+                                            }
+                                        }
+                                    };
+                                    message_dialog_yes_no(getString(R.string.delete) + " " + names.get(pos)+"?" , yesListener);
+                                }
+                            }
+                        });
+        mainListView.setOnTouchListener(touchListener);
 
         mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
           @Override
@@ -429,6 +453,18 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    public void message_dialog_yes_no (String msg, DialogInterface.OnClickListener yesListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+        builder.setMessage(msg)
+                .setCancelable(false)
+                .setPositiveButton(getString(R.string.yes), yesListener)
+                .setNegativeButton(getString(R.string.no),  new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }})
+                .show();
+    }
     	/**
 	 * Executes commands as root user
 	 * @author http://muzikant-android.blogspot.com/2011/02/how-to-get-root-access-and-execute.html
