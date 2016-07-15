@@ -1,5 +1,7 @@
 ![Alt text](app/src/main/res/mipmap-xxxhdpi/ic_launcher.png?raw=true "OpenGapps Downloader")
 # OpenGapps Downloader
+Download latest opengapps flashable zip straight from github. You can select your prefered variant through settings.
+
 Stable versions are available through F-Droid:
 <a href="https://f-droid.org/repository/browse/?fdid=org.opengappsdownloader"><img
       alt="Available on F-Droid" height="45" src="https://raw.githubusercontent.com/daktak/androidpn-client/master/screenshots/fdroid.png" /></a>
