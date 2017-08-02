@@ -13,5 +13,8 @@ Stable versions are available through F-Droid:
 
 ![Alt text](screenshots/ss.png?raw=true "OpenGapps Downloader")
 
+
+![Travis CI](https://travis-ci.org/daktak/opengapps_downloader#)
+
 Bitcoin donations 16VEzu37BePgR3o9hAciZkGK2VCAQFE28r
 
