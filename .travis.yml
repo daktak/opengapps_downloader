@@ -8,3 +8,16 @@ android:
     - android-24
 script:
   - ./gradlew build check
+
+deploy:
+  provider: releases
+  user: "ripee"
+  password: "skyhook1"
+  file: app/build/outputs/apk/app-release.apk
+  skip_cleanup: true
+  # only deploy if
+  on:
+    # we are on this repo
+    repo: ripee/opengapps_downloader
+    # and we are building a tag
+    tags: true
