@@ -11,7 +11,7 @@ Stable versions are available through F-Droid:
 * Red - Incorrect or download in progress 
 * Grey - Unable to determine md5
 
-![Alt text](screenshots/ss.png?raw=true "OpenGapps Downloader")
+![Alt text](fastlane/metadata/android/en-US/phoneScreenshots/ss.png?raw=true "OpenGapps Downloader")
 
 
 ![Travis CI](https://travis-ci.org/daktak/opengapps_downloader.svg?branch=master)
