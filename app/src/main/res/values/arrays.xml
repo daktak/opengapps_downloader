@@ -25,6 +25,7 @@
         <item>7.1</item>
         <item>8.0</item>
         <item>8.1</item>
+        <item>9.0</item>
         <item>@string/auto_detect</item>
     </string-array>
 </resources>
