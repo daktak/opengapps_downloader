@@ -2,7 +2,6 @@ package org.opengappsdownloader;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
+
+import androidx.core.content.ContextCompat;
 
 public class MyCustomAdapter extends ArrayAdapter<String> {
     private final Context context;
