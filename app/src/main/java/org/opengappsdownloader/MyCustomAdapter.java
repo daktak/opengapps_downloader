@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import java.io.File;
 
 public class MyCustomAdapter extends ArrayAdapter<String> {
@@ -37,23 +38,23 @@ public class MyCustomAdapter extends ArrayAdapter<String> {
         int color = ContextCompat.getColor(context, R.color.colorBlack);
 
         if (convertView == null) {
-            LayoutInflater inflater = ((Activity)context).getLayoutInflater();
+            LayoutInflater inflater = ((Activity) context).getLayoutInflater();
             convertView = inflater.inflate(R.layout.rowlayout, parent, false);
             holder = new ViewHolder();
-            holder.text = (TextView) convertView.findViewById(R.id.label);
-            holder.icon = (ImageView) convertView.findViewById(R.id.img);
+            holder.text = convertView.findViewById(R.id.label);
+            holder.icon = convertView.findViewById(R.id.img);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
         try {
-            for (int j = 0; j < file.length; j++) {
-                if (s.equals(file[j].getName())) {
+            for (File aFile : file) {
+                if (s.equals(aFile.getName())) {
                     color = ContextCompat.getColor(context, R.color.disabledText);
                     img = ContextCompat.getDrawable(context, R.drawable.unknown);
-                    Log.d(LOGTAG, file[j].getName() + " md5: " + md5check[position]);
-                    if (md5check[position].equalsIgnoreCase("Y") ) {
-                        color =ContextCompat.getColor(context, R.color.md5_match);
+                    Log.d(LOGTAG, aFile.getName() + " md5: " + md5check[position]);
+                    if (md5check[position].equalsIgnoreCase("Y")) {
+                        color = ContextCompat.getColor(context, R.color.md5_match);
                         img = ContextCompat.getDrawable(context, R.drawable.match);
                     } else if (md5check[position].equalsIgnoreCase("N")) {
                         color = ContextCompat.getColor(context, R.color.md5_nomatch);
@@ -64,7 +65,7 @@ public class MyCustomAdapter extends ArrayAdapter<String> {
                 }
             }
         } catch (Exception e) {
-            Log.w(LOGTAG, "Cant "+e.getMessage());
+            Log.w(LOGTAG, "Cant " + e.getMessage());
         }
         holder.text.setTextColor(color);
         holder.icon.setImageDrawable(img);

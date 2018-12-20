@@ -22,24 +22,15 @@ public class PrefsFragment extends PreferenceFragment {
         Preference prefDir = findPreference("prefDirectory");
 
         //prefDir.setIntent(i);
-        prefDir.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                Intent i = new Intent(getActivity(), DirectoryPicker.class);
-                /* If you set default dir , you can't navigate up!
-                SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                String dir = mySharedPreferences.getString("prefDirectory",null);
-                i.putExtra(DirectoryPicker.START_DIR, dir);*/
+        prefDir.setOnPreferenceClickListener(preference -> {
+            Intent i = new Intent(getActivity(), DirectoryPicker.class);
+            /* If you set default dir , you can't navigate up!
+            SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String dir = mySharedPreferences.getString("prefDirectory",null);
+            i.putExtra(DirectoryPicker.START_DIR, dir);*/
 
-                startActivity(i);
-                return true;
-            }
+            startActivity(i);
+            return true;
         });
-
-
-
     }
-
 }
-
-

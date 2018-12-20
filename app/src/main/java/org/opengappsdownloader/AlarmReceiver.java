@@ -15,17 +15,19 @@ public class AlarmReceiver extends BroadcastReceiver {
     private static final String DEBUG_TAG = "AlarmReceiver";
     private static final String LOGTAG = LogUtil
             .makeLogTag(AlarmReceiver.class);
+
     @Override
     public void onReceive(Context context, Intent intent) {
         Intent service = new Intent(context, Download.class);
-        service.putExtra("url",buildPath(context));
-        service.putExtra("action",3);
+        service.putExtra("url", buildPath(context));
+        service.putExtra("action", 3);
         context.startService(service);
     }
+
     public String buildPath(Context context) {
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String arch = mySharedPreferences.getString("prefArch","arm64");
-        String base = mySharedPreferences.getString("prefBase","").trim();
+        String arch = mySharedPreferences.getString("prefArch", "arm64");
+        String base = mySharedPreferences.getString("prefBase", "").trim();
         Uri builtUri = Uri.parse(base)
                 .buildUpon()
                 .appendPath("opengapps")

@@ -16,12 +16,12 @@ import java.util.Calendar;
 public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        String recievedAction = intent.getAction();
-        if (recievedAction.contentEquals(Intent.ACTION_BOOT_COMPLETED)) {
+        String receivedAction = intent.getAction();
+        if (receivedAction.contentEquals(Intent.ACTION_BOOT_COMPLETED)) {
             SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-            boolean daily = mySharedPreferences.getBoolean("prefDailyDownload",false);
+            boolean daily = mySharedPreferences.getBoolean("prefDailyDownload", false);
             boolean prefAuto = mySharedPreferences.getBoolean("prefAuto", true);
-            if (prefAuto&&daily) {
+            if (prefAuto && daily) {
                 setRecurringAlarm(context);
             }
         }
@@ -30,7 +30,7 @@ public class BootReceiver extends BroadcastReceiver {
     public void setRecurringAlarm(Context context) {
 
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        int hour =  Integer.parseInt(mySharedPreferences.getString("prefHour", context.getString(R.string.hour_val)));
+        int hour = Integer.parseInt(mySharedPreferences.getString("prefHour", context.getString(R.string.hour_val)));
         int minute = Integer.parseInt(mySharedPreferences.getString("prefMinute", context.getString(R.string.minute_val)));
         Calendar updateTime = Calendar.getInstance();
         //updateTime.setTimeZone(TimeZone.getTimeZone("GMT"));

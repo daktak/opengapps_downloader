@@ -17,19 +17,23 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,28 +48,28 @@ public class MainActivity extends AppCompatActivity
     public static String[] perms = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
     public static String[] perms2 = {Manifest.permission.READ_EXTERNAL_STORAGE};
     private static final int REQUEST_PREFS = 99;
-    private static final int RC_EXT_WRITE =1;
-    private static final int RC_EXT_READ=2;
+    private static final int RC_EXT_WRITE = 1;
+    private static final int RC_EXT_READ = 2;
     public static MainActivity instance = null;
-    public ArrayList<String> md5check = new ArrayList<String>();
-    public ArrayList<String> names = new ArrayList<String>();
-    public ArrayList<String> urls = new ArrayList<String>();
+    public ArrayList<String> md5check = new ArrayList<>();
+    public ArrayList<String> names = new ArrayList<>();
+    public ArrayList<String> urls = new ArrayList<>();
     public String directory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         PreferenceManager.setDefaultValues(this, R.xml.settings, false);
         setApi(this);
-        String[] namesA = new String[] {getString(R.string.loading)};
-        ListView mainListView = (ListView) findViewById( R.id.listView );
-        ListAdapter listAdapter =  new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, namesA);
+        String[] namesA = new String[]{getString(R.string.loading)};
+        ListView mainListView = findViewById(R.id.listView);
+        ListAdapter listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, namesA);
         // Set the ArrayAdapter as the ListView's adapter.
-        mainListView.setAdapter( listAdapter );
+        mainListView.setAdapter(listAdapter);
 
         if (!(EasyPermissions.hasPermissions(this, perms))) {
             // Ask for both permissions
@@ -92,7 +96,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @TargetApi(21)
-    public String get64(){
+    public String get64() {
         String out = "";
         if (Build.VERSION.SDK_INT >= 21) {
             if (Build.SUPPORTED_64_BIT_ABIS.length > 0) {
@@ -105,7 +109,7 @@ public class MainActivity extends AppCompatActivity
     public void setApi(Context context) {
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefEdit = mySharedPreferences.edit();
-        String android = mySharedPreferences.getString("prefAndroid",getString(R.string.android_val));
+        String android = mySharedPreferences.getString("prefAndroid", getString(R.string.android_val));
 
         if (android.equalsIgnoreCase(getString(R.string.auto_detect))) {
             String newAndroid = getString(R.string.androiddefault);
@@ -124,34 +128,34 @@ public class MainActivity extends AppCompatActivity
             Log.d(LOGTAG, "Setting api: " + newAndroid);
         }
 
-        String arch = mySharedPreferences.getString("prefArch",getString(R.string.arch_val));
+        String arch = mySharedPreferences.getString("prefArch", getString(R.string.arch_val));
 
         if (arch.equalsIgnoreCase(getString(R.string.auto_detect))) {
             String newArch = getString(R.string.archdefault);
             try {
                 String arch1 = Build.CPU_ABI;
-                newArch = arch1.substring(0,3).toLowerCase(Locale.ENGLISH);
+                newArch = arch1.substring(0, 3).toLowerCase(Locale.ENGLISH);
                 newArch += get64();
             } catch (Exception e) {
                 Log.w(LOGTAG, "Failed to get arch");
             }
             Log.d(LOGTAG, "Detected arch: " + newArch);
             //and newArc8h in list?
-            if  (!Arrays.asList(getResources().getStringArray(R.array.arch)).contains(newArch)) {
+            if (!Arrays.asList(getResources().getStringArray(R.array.arch)).contains(newArch)) {
                 newArch = getString(R.string.archdefault);
             }
 
             prefEdit.remove("prefArch");
-            prefEdit.putString("prefArch",newArch);
+            prefEdit.putString("prefArch", newArch);
             Log.d(LOGTAG, "Setting arch: " + newArch);
         }
         prefEdit.apply();
     }
 
 
-    public void setAlarm(Context context){
+    public void setAlarm(Context context) {
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean daily = mySharedPreferences.getBoolean("prefDailyDownload",false);
+        boolean daily = mySharedPreferences.getBoolean("prefDailyDownload", false);
         if (daily) {
             Log.d(LOGTAG, "Setting daily alarm");
             setRecurringAlarm(context);
@@ -163,10 +167,11 @@ public class MainActivity extends AppCompatActivity
     public SharedPreferences getPref() {
         return PreferenceManager.getDefaultSharedPreferences(this);
     }
+
     public void setRecurringAlarm(Context context) {
 
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        int hour =  Integer.parseInt(mySharedPreferences.getString("prefHour", getString(R.string.hour_val)));
+        int hour = Integer.parseInt(mySharedPreferences.getString("prefHour", getString(R.string.hour_val)));
         int minute = Integer.parseInt(mySharedPreferences.getString("prefMinute", getString(R.string.minute_val)));
         Calendar updateTime = Calendar.getInstance();
         //updateTime.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -184,8 +189,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public void CancelAlarm(Context context)
-    {
+    public void CancelAlarm(Context context) {
         Intent downloader = new Intent(context, AlarmReceiver.class);
         PendingIntent recurringDownload = PendingIntent.getBroadcast(context,
                 0, downloader, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -197,15 +201,15 @@ public class MainActivity extends AppCompatActivity
     public void run(Context context) {
         //new ParseURL().execute(new String[]{buildPath(context)});
         Intent service = new Intent(context, Download.class);
-        service.putExtra("url",buildPath(context));
-        service.putExtra("action",1);
+        service.putExtra("url", buildPath(context));
+        service.putExtra("action", 1);
         context.startService(service);
     }
 
     public String buildPath(Context context) {
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String arch = mySharedPreferences.getString("prefArch","arm64");
-        String base = mySharedPreferences.getString("prefBase",getString(R.string.base_val)).trim();
+        String arch = mySharedPreferences.getString("prefArch", "arm64");
+        String base = mySharedPreferences.getString("prefBase", getString(R.string.base_val)).trim();
         Uri builtUri = Uri.parse(base)
                 .buildUpon()
                 .appendPath(getString(R.string.subdir))
@@ -239,19 +243,19 @@ public class MainActivity extends AppCompatActivity
         }
         if (id == R.id.action_reboot) {
             ExecuteAsRootBase e = new ExecuteAsRootBase() {
-                    @Override
-                    protected ArrayList<String> getCommandsToExecute() {
-                        ArrayList<String> a = new ArrayList<String>();
-                        a.add("reboot recovery");
-                        return a;
-                    }
-                };
+                @Override
+                protected ArrayList<String> getCommandsToExecute() {
+                    ArrayList<String> a = new ArrayList<>();
+                    a.add("reboot recovery");
+                    return a;
+                }
+            };
             e.execute();
             return true;
         }
-	if (id == R.id.action_refresh) {
-	    run(this);
-	}
+        if (id == R.id.action_refresh) {
+            run(this);
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -278,8 +282,7 @@ public class MainActivity extends AppCompatActivity
 
     public String getBaseUrl() {
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String prefix = mySharedPreferences.getString("prefBase",getString(R.string.base_val)).trim();
-        return prefix;
+        return mySharedPreferences.getString("prefBase", getString(R.string.base_val)).trim();
     }
 
     public String readFile(String name) {
@@ -291,39 +294,39 @@ public class MainActivity extends AppCompatActivity
             BufferedReader buffreader = new BufferedReader(inputreader);
             String line;
 
-            while (( line = buffreader.readLine()) != null) {
+            while ((line = buffreader.readLine()) != null) {
                 out.append(line);
             }
 
             filein.close();
         } catch (Exception e) {
-            Log.d(LOGTAG,"Unable to open: "+name);
+            Log.d(LOGTAG, "Unable to open: " + name);
         }
         return out.toString();
     }
 
-    public void writeFile(String name, String body){
+    public void writeFile(String name, String body) {
         try {
             FileOutputStream fileout = openFileOutput(name, MODE_PRIVATE);
             OutputStreamWriter outputWriter = new OutputStreamWriter(fileout);
             outputWriter.write(body);
             outputWriter.close();
         } catch (Exception e) {
-            Log.w(LOGTAG, "Unable to write: "+name);
+            Log.w(LOGTAG, "Unable to write: " + name);
         }
     }
 
-    public void setList(List<String> values)  {
+    public void setList(List<String> values) {
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        directory = mySharedPreferences.getString("prefDirectory",Environment.DIRECTORY_DOWNLOADS).trim();
-        boolean external = mySharedPreferences.getBoolean("prefExternal",false);
+        directory = mySharedPreferences.getString("prefDirectory", Environment.DIRECTORY_DOWNLOADS).trim();
+        boolean external = mySharedPreferences.getBoolean("prefExternal", false);
         md5check.clear();
         names.clear();
         urls.clear();
         String md5_ext = getString(R.string.md5_ext);
         final String md5_calc_ext = getString(R.string.md5calc_ext);
 
-        if (external){
+        if (external) {
             directory = Environment.DIRECTORY_DOWNLOADS;
         }
 
@@ -337,7 +340,7 @@ public class MainActivity extends AppCompatActivity
             try {
                 file = direct.listFiles();
             } catch (Exception e) {
-                Log.w(LOGTAG, "Cant "+e.getMessage());
+                Log.w(LOGTAG, "Cant " + e.getMessage());
             }
         }
 
@@ -346,10 +349,10 @@ public class MainActivity extends AppCompatActivity
             i = i.trim();
             String name = i;
             try {
-                int slash = i.lastIndexOf("/")+1;
+                int slash = i.lastIndexOf("/") + 1;
                 name = i.substring(slash);
-            } catch (Exception e){
-                Log.w(LOGTAG, "Cant find slash in "+i);
+            } catch (Exception e) {
+                Log.w(LOGTAG, "Cant find slash in " + i);
             }
             names.add(name);
 
@@ -357,19 +360,19 @@ public class MainActivity extends AppCompatActivity
             // then check if downloaded md5 exists
             // then check if calc exists
 
-            for (int k = 0; k < file.length; k++) {
+            for (File aFile : file) {
 
-                if (name.equals(file[k].getName())) {
+                if (name.equals(aFile.getName())) {
                     String md5 = readFile(name + md5_ext);
                     if (!md5.isEmpty()) {
-                        String md5calc = readFile(name+md5_calc_ext);
+                        String md5calc = readFile(name + md5_calc_ext);
                         if (md5calc.isEmpty()) {
-                            md5calc = MD5.calculateMD5(file[k]);
+                            md5calc = MD5.calculateMD5(aFile);
                         }
                         if (md5calc.equalsIgnoreCase(md5)) {
                             md5val = "Y";
                             //cache this result
-                            writeFile(name+md5_calc_ext, md5calc);
+                            writeFile(name + md5_calc_ext, md5calc);
                         } else {
                             md5val = "N";
                             //don't cache, in the event the file is still downloading
@@ -386,7 +389,7 @@ public class MainActivity extends AppCompatActivity
             if (!(i.startsWith("http"))) {
                 prefix = getBaseUrl();
             }
-            urls.add(prefix+i);
+            urls.add(prefix + i);
 
 
         }
@@ -396,15 +399,15 @@ public class MainActivity extends AppCompatActivity
         String[] namesS = new String[names.size()];
         namesS = names.toArray(namesS);
         // Find the ListView resource.
-        ListView mainListView = (ListView) findViewById( R.id.listView );
-        String [] md5checkS = new String[md5check.size()];
+        ListView mainListView = findViewById(R.id.listView);
+        String[] md5checkS = new String[md5check.size()];
         md5checkS = md5check.toArray(md5checkS);
 
         MyCustomAdapter listAdapter = new MyCustomAdapter(this, namesS, file, md5checkS);
         //ListAdapter listAdapter =  new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, names);
 
         // Set the ArrayAdapter as the ListView's adapter.
-        mainListView.setAdapter( listAdapter );
+        mainListView.setAdapter(listAdapter);
         SwipeDismissListViewTouchListener touchListener =
                 new SwipeDismissListViewTouchListener(
                         mainListView,
@@ -412,7 +415,9 @@ public class MainActivity extends AppCompatActivity
                             @Override
                             public boolean canDismiss(int position) {
                                 boolean dis = true;
-                                if (md5check.get(position).isEmpty()) { dis = false; };
+                                if (md5check.get(position).isEmpty()) {
+                                    dis = false;
+                                }
                                 return dis;
                             }
 
@@ -420,105 +425,99 @@ public class MainActivity extends AppCompatActivity
                             public void onDismiss(ListView listView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
                                     final int pos = position;
-                                    DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            File direct = new File(Environment.getExternalStorageDirectory() + "/" + directory+"/"+names.get(pos));
-                                            Log.d(LOGTAG, "Delete " + direct.getName());
-                                            if (direct.exists()&&direct.isFile()) { direct.delete(); }
-                                            File md5file = new File(getFilesDir(), names.get(pos) + md5_calc_ext );
-                                            if (md5file.exists()&&md5file.isFile()) { md5file.delete(); }
-                                            if (MainActivity.instance != null) {
-                                                run(MainActivity.instance);
-                                            }
+                                    DialogInterface.OnClickListener yesListener = (dialog, which) -> {
+                                        File direct1 = new File(Environment.getExternalStorageDirectory() + "/" + directory + "/" + names.get(pos));
+                                        Log.d(LOGTAG, "Delete " + direct1.getName());
+                                        if (direct1.exists() && direct1.isFile()) {
+                                            direct1.delete();
+                                        }
+                                        File md5file = new File(getFilesDir(), names.get(pos) + md5_calc_ext);
+                                        if (md5file.exists() && md5file.isFile()) {
+                                            md5file.delete();
+                                        }
+                                        if (MainActivity.instance != null) {
+                                            run(MainActivity.instance);
                                         }
                                     };
-                                    message_dialog_yes_no(getString(R.string.delete) + " " + names.get(pos)+"?" , yesListener);
+                                    message_dialog_yes_no(getString(R.string.delete) + " " + names.get(pos) + "?", yesListener);
                                 }
                             }
                         });
         mainListView.setOnTouchListener(touchListener);
 
-        mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-          @Override
-          public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+        mainListView.setOnItemClickListener((parent, view, position, id) -> {
             if (view.isEnabled()) {
                 String url = urls.get(position);
                 Context context = getBaseContext();
                 Intent service = new Intent(context, Download.class);
-                service.putExtra("url", url.toString());
+                service.putExtra("url", url);
                 service.putExtra("action", 2);
                 context.startService(service);
 
-                //new ParseURLDownload().execute(new String[]{url.toString()});
+                //new ParseURLDownload().execute(new String[]{url});
 
             } else {
                 Log.d(LOGTAG, "Entry disabled");
             }
-          }
         });
     }
 
-    public void message_dialog_yes_no (String msg, DialogInterface.OnClickListener yesListener) {
+    public void message_dialog_yes_no(String msg, DialogInterface.OnClickListener yesListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
         builder.setMessage(msg)
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.yes), yesListener)
-                .setNegativeButton(getString(R.string.no),  new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }})
+                .setNegativeButton(getString(R.string.no), (dialog, id) -> dialog.cancel())
                 .show();
     }
-    	/**
-	 * Executes commands as root user
-	 * @author http://muzikant-android.blogspot.com/2011/02/how-to-get-root-access-and-execute.html
-	 */
-	public abstract class ExecuteAsRootBase {
-	  public final boolean execute() {
-	    boolean retval = false;
-	    try {
-	      ArrayList<String> commands = getCommandsToExecute();
-	      if (null != commands && commands.size() > 0) {
-	        Process suProcess = Runtime.getRuntime().exec("su");
 
-	        DataOutputStream os = new DataOutputStream(suProcess.getOutputStream());
+    /**
+     * Executes commands as root user
+     *
+     * @author http://muzikant-android.blogspot.com/2011/02/how-to-get-root-access-and-execute.html
+     */
+    public abstract class ExecuteAsRootBase {
+        public final boolean execute() {
+            boolean retval = false;
+            try {
+                ArrayList<String> commands = getCommandsToExecute();
+                if (null != commands && commands.size() > 0) {
+                    Process suProcess = Runtime.getRuntime().exec("su");
 
-	        // Execute commands that require root access
-	        for (String currCommand : commands) {
-	          os.writeBytes(currCommand + "\n");
-	          os.flush();
-	        }
+                    DataOutputStream os = new DataOutputStream(suProcess.getOutputStream());
 
-	        os.writeBytes("exit\n");
-	        os.flush();
+                    // Execute commands that require root access
+                    for (String currCommand : commands) {
+                        os.writeBytes(currCommand + "\n");
+                        os.flush();
+                    }
 
-	        try {
-	          int suProcessRetval = suProcess.waitFor();
-	          if (255 != suProcessRetval) {
-	            // Root access granted
-	            retval = true;
-	          } else {
-	            // Root access denied
-	            retval = false;
-	          }
-	        } catch (Exception ex) {
-	          Log.e(LOGTAG, "Error executing root action\n"+ ex.toString());
-	        }
-	      }
-	    } catch (IOException ex) {
-	      Log.w(LOGTAG, "Can't get root access", ex);
-	    } catch (SecurityException ex) {
-	      Log.w(LOGTAG, "Can't get root access", ex);
-	    } catch (Exception ex) {
-	      Log.w(LOGTAG, "Error executing internal operation", ex);
-	    }
+                    os.writeBytes("exit\n");
+                    os.flush();
 
-	    return retval;
-	  }
+                    try {
+                        int suProcessRetval = suProcess.waitFor();
+                        // Root access granted
+                        // Root access denied
+                        retval = 255 != suProcessRetval;
+                    } catch (Exception ex) {
+                        Log.e(LOGTAG, "Error executing root action\n" + ex.toString());
+                    }
+                }
+            } catch (IOException ex) {
+                Log.w(LOGTAG, "Can't get root access", ex);
+            } catch (SecurityException ex) {
+                Log.w(LOGTAG, "Can't get root access", ex);
+            } catch (Exception ex) {
+                Log.w(LOGTAG, "Error executing internal operation", ex);
+            }
 
-	  protected abstract ArrayList<String> getCommandsToExecute();
-	}
+            return retval;
+        }
+
+        protected abstract ArrayList<String> getCommandsToExecute();
+    }
 
 
     @Override

@@ -15,16 +15,16 @@
  */
 package org.opengappsdownloader;
 
-/** 
+/**
  * Utility class for LogCat.
  *
  * @author Sehwan Noh (devnoh@gmail.com)
  */
 public class LogUtil {
-    
+
     @SuppressWarnings("unchecked")
     public static String makeLogTag(Class cls) {
-        return "opengapps_downloader"+ cls.getSimpleName();
+        return "opengapps_downloader" + cls.getSimpleName();
     }
 
 }

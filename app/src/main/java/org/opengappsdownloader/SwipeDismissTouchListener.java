@@ -16,20 +16,19 @@ package org.opengappsdownloader;
  * limitations under the License.
  */
 
-        import android.animation.Animator;
-        import android.animation.AnimatorListenerAdapter;
-        import android.animation.ValueAnimator;
-        import android.annotation.TargetApi;
-        import android.app.ListActivity;
-        import android.app.ListFragment;
-        import android.os.Build;
-        import android.view.MotionEvent;
-        import android.view.VelocityTracker;
-        import android.view.View;
-        import android.view.ViewConfiguration;
-        import android.view.ViewGroup;
-        import android.widget.AdapterView;
-        import android.widget.ListView;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
+import android.annotation.TargetApi;
+import android.app.ListActivity;
+import android.app.ListFragment;
+import android.view.MotionEvent;
+import android.view.VelocityTracker;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
 
 /**
  * A {@link View.OnTouchListener} that makes any {@link View} dismissable when the
@@ -102,10 +101,10 @@ public class SwipeDismissTouchListener implements View.OnTouchListener {
     /**
      * Constructs a new swipe-to-dismiss touch listener for the given view.
      *
-     * @param view     The view to make dismissable.
-     * @param token    An optional token/cookie object to be passed through to the callback.
+     * @param view      The view to make dismissable.
+     * @param token     An optional token/cookie object to be passed through to the callback.
      * @param callbacks The callback to trigger when the user has indicated that she would like to
-     *                 dismiss this view.
+     *                  dismiss this view.
      */
     public SwipeDismissTouchListener(View view, Object token, DismissCallbacks callbacks) {
         ViewConfiguration vc = ViewConfiguration.get(view.getContext());
@@ -166,29 +165,23 @@ public class SwipeDismissTouchListener implements View.OnTouchListener {
                 }
                 if (dismiss) {
                     // dismiss
-                    if (Build.VERSION.SDK_INT >= 12) {
-                        mView.animate()
-                                .translationX(dismissRight ? mViewWidth : -mViewWidth)
-                                .alpha(0)
-                                .setDuration(mAnimationTime)
-                                .setListener(new AnimatorListenerAdapter() {
-                                    @Override
-                                    public void onAnimationEnd(Animator animation) {
-                                        performDismiss();
-                                    }
-                                });
-                    } else {
-                        performDismiss();
-                    }
+                    mView.animate()
+                            .translationX(dismissRight ? mViewWidth : -mViewWidth)
+                            .alpha(0)
+                            .setDuration(mAnimationTime)
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    performDismiss();
+                                }
+                            });
                 } else if (mSwiping) {
                     // cancel
-                    if (Build.VERSION.SDK_INT >= 12) {
-                        mView.animate()
-                                .translationX(0)
-                                .alpha(1)
-                                .setDuration(mAnimationTime)
-                                .setListener(null);
-                    }
+                    mView.animate()
+                            .translationX(0)
+                            .alpha(1)
+                            .setDuration(mAnimationTime)
+                            .setListener(null);
                 }
                 mVelocityTracker.recycle();
                 mVelocityTracker = null;
@@ -203,13 +196,11 @@ public class SwipeDismissTouchListener implements View.OnTouchListener {
                 if (mVelocityTracker == null) {
                     break;
                 }
-                if (Build.VERSION.SDK_INT >= 12) {
-                    mView.animate()
-                            .translationX(0)
-                            .alpha(1)
-                            .setDuration(mAnimationTime)
-                            .setListener(null);
-                }
+                mView.animate()
+                        .translationX(0)
+                        .alpha(1)
+                        .setDuration(mAnimationTime)
+                        .setListener(null);
                 mVelocityTracker.recycle();
                 mVelocityTracker = null;
                 mTranslationX = 0;
@@ -278,12 +269,9 @@ public class SwipeDismissTouchListener implements View.OnTouchListener {
             }
         });
 
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                lp.height = (Integer) valueAnimator.getAnimatedValue();
-                mView.setLayoutParams(lp);
-            }
+        animator.addUpdateListener(valueAnimator -> {
+            lp.height = (Integer) valueAnimator.getAnimatedValue();
+            mView.setLayoutParams(lp);
         });
 
         animator.start();
