@@ -16,25 +16,24 @@ package org.opengappsdownloader;
  * limitations under the License.
  */
 
-        import android.animation.Animator;
-        import android.animation.AnimatorListenerAdapter;
-        import android.animation.ValueAnimator;
-        import android.annotation.TargetApi;
-        import android.graphics.Rect;
-        import android.os.Build;
-        import android.os.SystemClock;
-        import android.view.MotionEvent;
-        import android.view.VelocityTracker;
-        import android.view.View;
-        import android.view.ViewConfiguration;
-        import android.view.ViewGroup;
-        import android.view.ViewPropertyAnimator;
-        import android.widget.AbsListView;
-        import android.widget.ListView;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
+import android.annotation.TargetApi;
+import android.graphics.Rect;
+import android.os.SystemClock;
+import android.view.MotionEvent;
+import android.view.VelocityTracker;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
+import android.widget.AbsListView;
+import android.widget.ListView;
 
-        import java.util.ArrayList;
-        import java.util.Collections;
-        import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A {@link View.OnTouchListener} that makes the list items in a {@link ListView}
@@ -88,7 +87,7 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
     private int mViewWidth = 1; // 1 and not 0 to prevent dividing by zero
 
     // Transient properties
-    private List<PendingDismissData> mPendingDismisses = new ArrayList<PendingDismissData>();
+    private List<PendingDismissData> mPendingDismisses = new ArrayList<>();
     private int mDismissAnimationRefCount = 0;
     private float mDownX;
     private float mDownY;
@@ -265,29 +264,23 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
                     final View downView = mDownView; // mDownView gets null'd before animation ends
                     final int downPosition = mDownPosition;
                     ++mDismissAnimationRefCount;
-                    if (Build.VERSION.SDK_INT >= 12) {
-                        mDownView.animate()
-                                .translationX(dismissRight ? mViewWidth : -mViewWidth)
-                                .alpha(0)
-                                .setDuration(mAnimationTime)
-                                .setListener(new AnimatorListenerAdapter() {
-                                    @Override
-                                    public void onAnimationEnd(Animator animation) {
-                                        performDismiss(downView, downPosition);
-                                    }
-                                });
-                    } else {
-                        performDismiss(downView, downPosition);
-                    }
+                    mDownView.animate()
+                            .translationX(dismissRight ? mViewWidth : -mViewWidth)
+                            .alpha(0)
+                            .setDuration(mAnimationTime)
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    performDismiss(downView, downPosition);
+                                }
+                            });
                 } else {
                     // cancel
-                    if (Build.VERSION.SDK_INT >= 12) {
-                        mDownView.animate()
-                                .translationX(0)
-                                .alpha(1)
-                                .setDuration(mAnimationTime)
-                                .setListener(null);
-                    }
+                    mDownView.animate()
+                            .translationX(0)
+                            .alpha(1)
+                            .setDuration(mAnimationTime)
+                            .setListener(null);
                 }
                 mVelocityTracker.recycle();
                 mVelocityTracker = null;
@@ -400,12 +393,9 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
             }
         });
 
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                lp.height = (Integer) valueAnimator.getAnimatedValue();
-                dismissView.setLayoutParams(lp);
-            }
+        animator.addUpdateListener(valueAnimator -> {
+            lp.height = (Integer) valueAnimator.getAnimatedValue();
+            dismissView.setLayoutParams(lp);
         });
 
         mPendingDismisses.add(new PendingDismissData(dismissPosition, dismissView));

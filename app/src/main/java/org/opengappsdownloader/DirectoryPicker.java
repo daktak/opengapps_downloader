@@ -1,9 +1,5 @@
 package org.opengappsdownloader;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -12,34 +8,35 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+
 /**
- Copyright (C) 2011 by Brad Greco <brad@bgreco.net>
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
+ * Copyright (C) 2011 by Brad Greco <brad@bgreco.net>
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 public class DirectoryPicker extends ListActivity {
@@ -51,7 +48,7 @@ public class DirectoryPicker extends ListActivity {
     public static final int PICK_DIRECTORY = 43522432;
     private File dir;
     private boolean showHidden = false;
-    private boolean onlyDirs = true ;
+    private boolean onlyDirs = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,9 +60,9 @@ public class DirectoryPicker extends ListActivity {
             String preferredStartDir = extras.getString(START_DIR);
             showHidden = extras.getBoolean(SHOW_HIDDEN, false);
             onlyDirs = extras.getBoolean(ONLY_DIRS, true);
-            if(preferredStartDir != null) {
+            if (preferredStartDir != null) {
                 File startDir = new File(preferredStartDir);
-                if(startDir.isDirectory()) {
+                if (startDir.isDirectory()) {
                     dir = startDir;
                 }
             }
@@ -73,22 +70,18 @@ public class DirectoryPicker extends ListActivity {
 
         setContentView(R.layout.chooser_list);
         setTitle(dir.getAbsolutePath());
-        Button btnChoose = (Button) findViewById(R.id.btnChoose);
+        Button btnChoose = findViewById(R.id.btnChoose);
         String name = dir.getName();
-        if(name.length() == 0)
+        if (name.length() == 0)
             name = "/";
         String btnTxt = getString(R.string.choose) + " '" + name + "'";
         btnChoose.setText(btnTxt);
-        btnChoose.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                returnDir(dir.getAbsolutePath());
-            }
-        });
+        btnChoose.setOnClickListener(v -> returnDir(dir.getAbsolutePath()));
 
         ListView lv = getListView();
         lv.setTextFilterEnabled(true);
 
-        if(!dir.canRead()) {
+        if (!dir.canRead()) {
             Context context = getApplicationContext();
             String msg = "Could not read folder contents.";
             Toast toast = Toast.makeText(context, msg, Toast.LENGTH_LONG);
@@ -98,26 +91,24 @@ public class DirectoryPicker extends ListActivity {
 
         final ArrayList<File> files = filter(dir.listFiles(), onlyDirs, showHidden);
         String[] names = names(files);
-        setListAdapter(new ArrayAdapter<String>(this, R.layout.list_item, names));
+        setListAdapter(new ArrayAdapter<>(this, R.layout.list_item, names));
 
 
-        lv.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(!files.get(position).isDirectory())
-                    return;
-                String path = files.get(position).getAbsolutePath();
-                Intent intent = new Intent(DirectoryPicker.this, DirectoryPicker.class);
-                intent.putExtra(DirectoryPicker.START_DIR, path);
-                intent.putExtra(DirectoryPicker.SHOW_HIDDEN, showHidden);
-                intent.putExtra(DirectoryPicker.ONLY_DIRS, onlyDirs);
-                startActivityForResult(intent, PICK_DIRECTORY);
-            }
+        lv.setOnItemClickListener((parent, view, position, id) -> {
+            if (!files.get(position).isDirectory())
+                return;
+            String path = files.get(position).getAbsolutePath();
+            Intent intent = new Intent(DirectoryPicker.this, DirectoryPicker.class);
+            intent.putExtra(DirectoryPicker.START_DIR, path);
+            intent.putExtra(DirectoryPicker.SHOW_HIDDEN, showHidden);
+            intent.putExtra(DirectoryPicker.ONLY_DIRS, onlyDirs);
+            startActivityForResult(intent, PICK_DIRECTORY);
         });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == PICK_DIRECTORY && resultCode == RESULT_OK) {
+        if (requestCode == PICK_DIRECTORY && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             String path = (String) extras.get(DirectoryPicker.CHOSEN_DIRECTORY);
             returnDir(path);
@@ -132,23 +123,23 @@ public class DirectoryPicker extends ListActivity {
         Intent result = new Intent();
         result.putExtra(CHOSEN_DIRECTORY, path);
         setResult(RESULT_OK, result);
-        Log.d("basketbuilddownloader","chose: "+path);
+        Log.d("opengappsdownloader", "chose: " + path);
 
         Context context = getApplicationContext();
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefEdit = mySharedPreferences.edit();
         prefEdit.remove("prefDirectory");
-        prefEdit.putString("prefDirectory",path);
+        prefEdit.putString("prefDirectory", path);
         prefEdit.apply();
         finish();
     }
 
     public ArrayList<File> filter(File[] file_list, boolean onlyDirs, boolean showHidden) {
-        ArrayList<File> files = new ArrayList<File>();
-        for(File file: file_list) {
-            if(onlyDirs && !file.isDirectory())
+        ArrayList<File> files = new ArrayList<>();
+        for (File file : file_list) {
+            if (onlyDirs && !file.isDirectory())
                 continue;
-            if(!showHidden && file.isHidden())
+            if (!showHidden && file.isHidden())
                 continue;
             files.add(file);
         }
@@ -159,7 +150,7 @@ public class DirectoryPicker extends ListActivity {
     public String[] names(ArrayList<File> files) {
         String[] names = new String[files.size()];
         int i = 0;
-        for(File file: files) {
+        for (File file : files) {
             names[i] = file.getName();
             i++;
         }

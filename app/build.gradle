@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '23.0.3'
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         applicationId "org.opengappsdownloader"
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 28
         versionCode 11
         versionName "0.4.5"
     }
@@ -17,20 +17,31 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    lintOptions {
+        //disable
+        warning 'TrustAllX509TrustManager', 'GoogleAppIndexingWarning', 'UnusedResources',
+                'IconMissingDensityFolder' //'IconDipSize','IconLocation',
+        checkReleaseBuilds false
+    }
+
+    compileOptions {
+        encoding = 'UTF-8'
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:design:25.3.1'
-    compile 'org.jsoup:jsoup:1.9.1'
-}
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.13-beta-1'
 
-android {
-    lintOptions {
-        disable 'TrustAllX509TrustManager','GoogleAppIndexingWarning', 'UnusedResources','IconMissingDensityFolder','OldTargetApi'
-                //'IconDipSize','IconLocation',
-        checkReleaseBuilds false
-    }
+    implementation 'androidx.annotation:annotation:1.0.1'
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha01'
+    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.1.0-alpha01'
+    implementation 'androidx.core:core:1.1.0-alpha03'
+    implementation 'androidx.fragment:fragment:1.1.0-alpha03'
+    implementation 'com.google.android.material:material:1.1.0-alpha02'
+
+    implementation 'org.jsoup:jsoup:1.11.3'
 }
